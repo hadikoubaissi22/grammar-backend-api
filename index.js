@@ -2,7 +2,6 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import lessonsRouter from './routes/lessons.js';
-import authRouter from './routes/auth.js';
 
 dotenv.config();
 
@@ -12,7 +11,6 @@ app.use(express.json());
 
 // Routes
 app.use('/lessons', lessonsRouter);
-app.use('/api', authRouter);
 
 // Root
 app.get('/', (req, res) => {

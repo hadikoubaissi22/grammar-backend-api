@@ -1,6 +1,7 @@
 import express from 'express';
 import pool from '../db.js'; // your PostgreSQL pool
-import bcrypt from 'bcrypt'; // optional: for hashed passwords
+import bcrypt from "bcryptjs";
+
 
 const router = express.Router();
 

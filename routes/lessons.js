@@ -69,5 +69,24 @@ router.post('/', async (req, res) => {
   }
 });
 
+// DELETE a lesson by ID
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Delete the lesson (questions + options will be deleted automatically because of ON DELETE CASCADE)
+    const result = await pool.query('DELETE FROM lessons WHERE id = $1 RETURNING *', [id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Lesson not found' });
+    }
+
+    res.status(200).json({ message: 'Lesson deleted successfully', lesson: result.rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 
 export default router;

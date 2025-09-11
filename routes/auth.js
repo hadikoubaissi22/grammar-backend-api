@@ -32,7 +32,7 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign(
       { id: user.id, username: user.username },
       process.env.JWT_SECRET,
-      { expiresIn: "5min" }
+      { expiresIn: "1h" }
     );
 
     // If login successful, return user info (or token if JWT)

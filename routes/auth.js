@@ -28,11 +28,11 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // ✅ Generate JWT token valid for 6 hours
+    // ✅ Generate JWT token valid for 12 hours
     const token = jwt.sign(
       { id: user.id, username: user.username },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "12h" }
     );
 
     // If login successful, return user info (or token if JWT)

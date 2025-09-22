@@ -234,12 +234,12 @@ router.post('/login', async (req, res) => {
     res.status(200).json({ token });
 
     // send email asynchronously (don’t await)
-    transporter.sendMail({
-      from: `"Grammar Master" <${process.env.EMAIL_USER}>`,
-      to: 'koubaissihadi2@gmail.com',
-      subject: "Grammar Master - New Login Detected",
-      text: `Hello Hadi, ${user.fullname} just logged in ${new Date().toLocaleString("en-US", { timeZone: "Asia/Beirut" })}.`
-    }).catch(err => console.error("Email send error:", err));
+    // transporter.sendMail({
+    //   from: `"Grammar Master" <${process.env.EMAIL_USER}>`,
+    //   to: 'koubaissihadi2@gmail.com',
+    //   subject: "Grammar Master - New Login Detected",
+    //   text: `Hello Hadi, ${user.fullname} just logged in ${new Date().toLocaleString("en-US", { timeZone: "Asia/Beirut" })}.`
+    // }).catch(err => console.error("Email send error:", err));
 
   } catch (err) {
     console.error(err);

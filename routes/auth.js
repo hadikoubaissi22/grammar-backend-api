@@ -155,6 +155,55 @@ router.post('/resend-otp', async (req, res) => {
   }
 });
 
+// POST /reset password
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // check if user exists
+    const user = await pool.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (user.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const foundUser = user.rows[0];
+
+    // generate new password (8 chars with symbols)
+    const crypto = require('crypto');
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:,.<>?';
+    let new_password = Array.from(crypto.randomFillSync(new Uint32Array(8)))
+      .map(x => chars[x % chars.length])
+      .join('');
+
+    // hash the password before saving (recommended)
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+
+    // update password in database
+    await pool.query(
+      'UPDATE users SET password = $1 WHERE email = $2',
+      [hashedPassword, email]
+    );
+
+    // send email
+    await transporter.sendMail({
+      from: `"Grammar Master" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Your New Password",
+      text: `Hello ${foundUser.fullname}, your new password is: ${new_password}\n\nYou can now log in with this new password.`,
+    });
+
+    res.status(200).json({ message: 'New password sent to your email' });
+
+  } catch (err) {
+    console.error('Reset Password error:', err);
+    res.status(500).json({ message: 'Server error while resetting password' });
+  }
+});
 
 
 // POST /api/login

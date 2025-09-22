@@ -107,6 +107,55 @@ router.post('/verify-otp', async (req, res) => {
   }
 });
 
+// POST /resend OTP
+router.post('/resend-otp', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // check if user exists
+    const user = await pool.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (user.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const foundUser = user.rows[0];
+
+    // if already verified, don’t resend
+    if (foundUser.is_verified) {
+      return res.status(400).json({ message: 'User already verified' });
+    }
+
+    // generate new OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // update OTP in database
+    await pool.query(
+      'UPDATE users SET otp_code = $1, otp_expires = $2 WHERE email = $3',
+      [otp, otpExpires, email]
+    );
+
+    // send email
+    await transporter.sendMail({
+      from: `"Grammar Master" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Your New OTP Code",
+      text: `Hello ${foundUser.fullname}, your new OTP code is ${otp}. It will expire in 10 minutes.`,
+    });
+
+    res.status(200).json({ message: 'OTP resent to your email' });
+
+  } catch (err) {
+    console.error('Resend OTP error:', err);
+    res.status(500).json({ message: 'Server error while resending OTP' });
+  }
+});
+
+
 
 // POST /api/login
 router.post('/login', async (req, res) => {

@@ -172,26 +172,25 @@ router.post('/forgot-password', async (req, res) => {
 
     const foundUser = user.rows[0];
 
-    // generate new password (8 chars with symbols)
-    // const crypto = require('crypto');
-    // const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:,.<>?';
-    // let new_password = Array.from(crypto.randomFillSync(new Uint32Array(8)))
-    //   .map(x => chars[x % chars.length])
-    //   .join('');
+    // Generate a new, secure password (guaranteed to be a string)
+    const crypto = require('crypto');
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:,.<>?';
+    let new_password = '';
+    for (let i = 0; i < 10; i++) { // Generate a 10-character password
+        new_password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
 
-    let new_password = Math.random().toString(36).slice(-8); // simpler 8-char password
-
-    // hash the password before saving (recommended)
+    // Hash the password
     const bcrypt = require('bcryptjs');
     const hashedPassword = await bcrypt.hash(new_password, 10);
 
-    // update password in database
+    // Update password in the database
     await pool.query(
       'UPDATE users SET password = $1 WHERE email = $2',
       [hashedPassword, forgot_email]
     );
 
-    // send email
+    // Send email with the new password
     await transporter.sendMail({
       from: `"Grammar Master" <${process.env.EMAIL_USER}>`,
       to: forgot_email,
@@ -206,7 +205,6 @@ router.post('/forgot-password', async (req, res) => {
     res.status(500).json({ message: 'Server error while resetting password' });
   }
 });
-
 
 // POST /api/login
 router.post('/login', async (req, res) => {

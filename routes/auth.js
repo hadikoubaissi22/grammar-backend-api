@@ -173,7 +173,6 @@ router.post('/forgot-password', async (req, res) => {
     const foundUser = user.rows[0];
 
     // Generate a new, secure password (guaranteed to be a string)
-    const crypto = require('crypto');
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:,.<>?';
     let new_password = '';
     for (let i = 0; i < 10; i++) { // Generate a 10-character password

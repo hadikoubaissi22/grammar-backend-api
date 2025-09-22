@@ -180,7 +180,6 @@ router.post('/forgot-password', async (req, res) => {
     }
 
     // Hash the password
-    // const bcrypt = require('bcryptjs');
     const hashedPassword = await bcrypt.hash(new_password, 10);
 
     // Update password in the database

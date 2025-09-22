@@ -74,7 +74,7 @@ router.post('/verify-otp', async (req, res) => {
   const { email, otp } = req.body;
 
   try {
-    const result = await pool.query('SELECT * FROM email WHERE id=$1', [email]);
+    const result = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -95,8 +95,8 @@ router.post('/verify-otp', async (req, res) => {
 
     // mark verified
     await pool.query(
-      'UPDATE users SET is_verified = true, otp_code = NULL, otp_expires = NULL WHERE id=$1',
-      [userId]
+      'UPDATE users SET is_verified = true, otp_code = NULL, otp_expires = NULL WHERE email=$1',
+      [email]
     );
 
     res.json({ message: 'Account verified successfully!' });

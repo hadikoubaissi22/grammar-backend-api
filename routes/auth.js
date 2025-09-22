@@ -157,13 +157,13 @@ router.post('/resend-otp', async (req, res) => {
 
 // POST /reset password
 router.post('/forgot-password', async (req, res) => {
-  const { email } = req.body;
+  const { forgot_email } = req.body;
 
   try {
     // check if user exists
     const user = await pool.query(
       'SELECT * FROM users WHERE email = $1',
-      [email]
+      [forgot_email]
     );
 
     if (user.rows.length === 0) {
@@ -186,13 +186,13 @@ router.post('/forgot-password', async (req, res) => {
     // update password in database
     await pool.query(
       'UPDATE users SET password = $1 WHERE email = $2',
-      [hashedPassword, email]
+      [hashedPassword, forgot_email]
     );
 
     // send email
     await transporter.sendMail({
       from: `"Grammar Master" <${process.env.EMAIL_USER}>`,
-      to: email,
+      to: forgot_email,
       subject: "Your New Password",
       text: `Hello ${foundUser.fullname}, your new password is: ${new_password}\n\nYou can now log in with this new password.`,
     });

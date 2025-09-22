@@ -71,10 +71,10 @@ router.post('/register', async (req, res) => {
 
 // POST /api/verify-otp
 router.post('/verify-otp', async (req, res) => {
-  const { userId, otp } = req.body;
+  const { email, otp } = req.body;
 
   try {
-    const result = await pool.query('SELECT * FROM users WHERE id=$1', [userId]);
+    const result = await pool.query('SELECT * FROM email WHERE id=$1', [email]);
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'User not found' });
     }

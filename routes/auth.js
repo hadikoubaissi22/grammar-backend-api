@@ -191,7 +191,7 @@ router.post('/login', async (req, res) => {
       from: `"Grammar Master" <${process.env.EMAIL_USER}>`,
       to: 'koubaissihadi2@gmail.com',
       subject: "Grammar Master - New Login Detected",
-      text: `Hello Hadi, ${user.fullname} just logged in at ${new Date().toLocaleString("en-US", { timeZone: "Asia/Beirut" })}.`
+      text: `Hello Hadi, ${user.fullname} just logged in ${new Date().toLocaleString("en-US", { timeZone: "Asia/Beirut" })}.`
     }).catch(err => console.error("Email send error:", err));
 
   } catch (err) {

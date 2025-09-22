@@ -2,22 +2,31 @@ import express from 'express';
 import pool from '../db.js'; // your PostgreSQL pool
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
 
 const router = express.Router();
+
+// configure mail transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail", // or use SMTP provider
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 // POST /api/register
 router.post('/register', async (req, res) => {
   const { fullName, email, username, password } = req.body;
 
   try {
-    // 1. Check if the username or email already exists
+    // check existing user
     const existingUser = await pool.query(
       'SELECT * FROM users WHERE username = $1 OR email = $2',
       [username, email]
     );
 
     if (existingUser.rows.length > 0) {
-      // Check which one already exists
       const foundUser = existingUser.rows[0];
       if (foundUser.username === username) {
         return res.status(409).json({ message: 'Username already exists' });
@@ -27,18 +36,31 @@ router.post('/register', async (req, res) => {
       }
     }
 
-    // 2. Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
+    // hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3. Save the new user to the database
+    // generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // valid 10 minutes
+
+    // save user with OTP
     const newUser = await pool.query(
-      'INSERT INTO users (fullname, email, username, password) VALUES ($1, $2, $3, $4) RETURNING id, username',
-      [fullName, email, username, hashedPassword]
+      `INSERT INTO users (fullname, email, username, password, otp_code, otp_expires) 
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username, email`,
+      [fullName, email, username, hashedPassword, otp, otpExpires]
     );
 
-    res.status(201).json({ 
-      message: 'Registration successful!', 
-      user: newUser.rows[0] 
+    // send email
+    await transporter.sendMail({
+      from: `"Grammar Master" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Your OTP Code",
+      text: `Hello ${fullName}, your OTP code is ${otp}. It will expire in 10 minutes.`,
+    });
+
+    res.status(201).json({
+      message: 'OTP sent to your email. Please verify.',
+      userId: newUser.rows[0].id
     });
 
   } catch (err) {
@@ -46,6 +68,45 @@ router.post('/register', async (req, res) => {
     res.status(500).json({ message: 'Server error during registration' });
   }
 });
+
+// POST /api/verify-otp
+router.post('/verify-otp', async (req, res) => {
+  const { userId, otp } = req.body;
+
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE id=$1', [userId]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const user = result.rows[0];
+
+    if (user.is_verified) {
+      return res.status(400).json({ message: 'User already verified' });
+    }
+
+    if (user.otp_code !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    if (new Date() > user.otp_expires) {
+      return res.status(400).json({ message: 'OTP expired' });
+    }
+
+    // mark verified
+    await pool.query(
+      'UPDATE users SET is_verified = true, otp_code = NULL, otp_expires = NULL WHERE id=$1',
+      [userId]
+    );
+
+    res.json({ message: 'Account verified successfully!' });
+
+  } catch (err) {
+    console.error('OTP verification error:', err);
+    res.status(500).json({ message: 'Server error during OTP verification' });
+  }
+});
+
 
 // POST /api/login
 router.post('/login', async (req, res) => {

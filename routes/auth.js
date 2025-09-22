@@ -173,11 +173,13 @@ router.post('/forgot-password', async (req, res) => {
     const foundUser = user.rows[0];
 
     // generate new password (8 chars with symbols)
-    const crypto = require('crypto');
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:,.<>?';
-    let new_password = Array.from(crypto.randomFillSync(new Uint32Array(8)))
-      .map(x => chars[x % chars.length])
-      .join('');
+    // const crypto = require('crypto');
+    // const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:,.<>?';
+    // let new_password = Array.from(crypto.randomFillSync(new Uint32Array(8)))
+    //   .map(x => chars[x % chars.length])
+    //   .join('');
+
+    let new_password = Math.random().toString(36).slice(-8); // simpler 8-char password
 
     // hash the password before saving (recommended)
     const bcrypt = require('bcryptjs');

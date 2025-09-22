@@ -173,15 +173,17 @@ router.post('/forgot-password', async (req, res) => {
     const foundUser = user.rows[0];
 
     // Generate a new, secure password (guaranteed to be a string)
-    const crypto = require('crypto');
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:,.<>?';
-    let new_password = '';
-    for (let i = 0; i < 10; i++) { // Generate a 10-character password
-        new_password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-
+    // const crypto = require('crypto');
+    // const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:,.<>?';
+    // let new_password = '';
+    // for (let i = 0; i < 10; i++) { // Generate a 10-character password
+    //     new_password += chars.charAt(Math.floor(Math.random() * chars.length));
+    // }
+    let new_password = 'password123!'; // Temporary fixed password for testing
     // Hash the password
-    const bcrypt = require('bcryptjs');
+    // const bcrypt = require('bcryptjs');
+    // const hashedPassword = await bcrypt.hash(new_password, 10);
+
     const hashedPassword = await bcrypt.hash(new_password, 10);
 
     // Update password in the database

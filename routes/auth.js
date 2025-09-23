@@ -234,9 +234,10 @@ router.post('/login', async (req, res) => {
     // Insert login log (type = 1, comment = "<fullname> logged in")
     await pool.query(
       `INSERT INTO logs (logs_type, comment, userid, datetime)
-       VALUES ($1, $2, $3, NOW())`,
+      VALUES ($1, $2, $3, NOW() AT TIME ZONE 'Asia/Beirut')`,
       [1, `${user.fullname} logged in`, user.id]
     );
+
 
     res.status(200).json({ token });
 

@@ -62,6 +62,13 @@ router.post('/', async (req, res) => {
       }
     }
 
+    await pool.query(
+      `INSERT INTO logs (logs_type, comment, userid, datetime)
+      VALUES ($1, $2, $3, NOW() AT TIME ZONE 'Asia/Beirut')`,
+      [6, `${req.user.fullname} added new lesson ${lessonId}`, req.user.id]
+    );
+
+
     res.status(201).json({ message: 'Lesson saved successfully!' });
   } catch (err) {
     console.error(err);
@@ -80,6 +87,12 @@ router.delete('/:id', async (req, res) => {
     if (result.rowCount === 0) {
       return res.status(404).json({ message: 'Lesson not found' });
     }
+
+    await pool.query(
+      `INSERT INTO logs (logs_type, comment, userid, datetime)
+      VALUES ($1, $2, $3, NOW() AT TIME ZONE 'Asia/Beirut')`,
+      [7, `${req.user.fullname} deleted lesson ${id}`, req.user.id]
+    );
 
     res.status(200).json({ message: 'Lesson deleted successfully', lesson: result.rows[0] });
   } catch (err) {
@@ -144,6 +157,12 @@ router.put('/:id', async (req, res) => {
     if (questionsToDelete.length > 0) {
       await pool.query('DELETE FROM questions WHERE id = ANY($1)', [questionsToDelete]);
     }
+
+    await pool.query(
+      `INSERT INTO logs (logs_type, comment, userid, datetime)
+      VALUES ($1, $2, $3, NOW() AT TIME ZONE 'Asia/Beirut')`,
+      [8, `${req.user.fullname} updated lesson ${lessonId}`, req.user.id]
+    );
 
     res.status(200).json({ message: 'Lesson updated successfully!' });
   } catch (err) {

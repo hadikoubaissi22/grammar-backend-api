@@ -63,6 +63,12 @@ router.post('/register', async (req, res) => {
       userId: newUser.rows[0].id
     });
 
+    await pool.query(
+      `INSERT INTO logs (logs_type, comment, userid, datetime)
+      VALUES ($1, $2, $3, NOW() AT TIME ZONE 'Asia/Beirut')`,
+      [2, `${fullName} registered`, 0]
+    );
+
   } catch (err) {
     console.error('Registration error:', err);
     res.status(500).json({ message: 'Server error during registration' });
@@ -97,6 +103,12 @@ router.post('/verify-otp', async (req, res) => {
     await pool.query(
       'UPDATE users SET is_verified = true, otp_code = NULL, otp_expires = NULL WHERE email=$1',
       [email]
+    );
+
+    await pool.query(
+      `INSERT INTO logs (logs_type, comment, userid, datetime)
+      VALUES ($1, $2, $3, NOW() AT TIME ZONE 'Asia/Beirut')`,
+      [3, `${user.fullname} verified his OTP`, 0]
     );
 
     res.json({ message: 'Account verified successfully!' });
@@ -147,6 +159,12 @@ router.post('/resend-otp', async (req, res) => {
       text: `Hello ${foundUser.fullname}, your new OTP code is ${otp}. It will expire in 10 minutes.`,
     });
 
+    await pool.query(
+      `INSERT INTO logs (logs_type, comment, userid, datetime)
+      VALUES ($1, $2, $3, NOW() AT TIME ZONE 'Asia/Beirut')`,
+      [4, `${foundUser.fullname} resend his OTP`, 0]
+    );
+
     res.status(200).json({ message: 'OTP resent to your email' });
 
   } catch (err) {
@@ -196,6 +214,12 @@ router.post('/forgot-password', async (req, res) => {
       text: `Hello ${foundUser.fullname}, your new password is: ${new_password}\n\nYou can now log in with this new password.`,
     });
 
+    await pool.query(
+      `INSERT INTO logs (logs_type, comment, userid, datetime)
+      VALUES ($1, $2, $3, NOW() AT TIME ZONE 'Asia/Beirut')`,
+      [5, `${foundUser.fullname} forgot his password`, 0]
+    );
+
     res.status(200).json({ message: 'New password sent to your email' });
 
   } catch (err) {
@@ -226,7 +250,7 @@ router.post('/login', async (req, res) => {
 
     // Generate JWT token valid for 12 hours
     const token = jwt.sign(
-      { id: user.id, username: user.username },
+      { id: user.id, username: user.username, fullname: user.fullname },
       process.env.JWT_SECRET,
       { expiresIn: "12h" }
     );

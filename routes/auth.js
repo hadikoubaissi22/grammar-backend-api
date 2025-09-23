@@ -231,15 +231,14 @@ router.post('/login', async (req, res) => {
       { expiresIn: "12h" }
     );
 
-    res.status(200).json({ token });
+    // Insert login log (type = 1, comment = "<fullname> logged in")
+    await pool.query(
+      `INSERT INTO logs (logs_type, comment, userid, datetime)
+       VALUES ($1, $2, $3, NOW())`,
+      [1, `${user.fullname} logged in`, user.id]
+    );
 
-    // send email asynchronously (don’t await)
-    // transporter.sendMail({
-    //   from: `"Grammar Master" <${process.env.EMAIL_USER}>`,
-    //   to: 'koubaissihadi2@gmail.com',
-    //   subject: "Grammar Master - New Login Detected",
-    //   text: `Hello Hadi, ${user.fullname} just logged in ${new Date().toLocaleString("en-US", { timeZone: "Asia/Beirut" })}.`
-    // }).catch(err => console.error("Email send error:", err));
+    res.status(200).json({ token });
 
   } catch (err) {
     console.error(err);

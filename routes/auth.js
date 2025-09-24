@@ -250,7 +250,7 @@ router.post('/login', async (req, res) => {
 
     // Generate JWT token valid for 12 hours
     const token = jwt.sign(
-      { id: user.id, username: user.username, fullname: user.fullname },
+      { id: user.id, username: user.username, fullname: user.fullname, user_type: user.user_type },
       process.env.JWT_SECRET,
       { expiresIn: "12h" }
     );
@@ -263,7 +263,7 @@ router.post('/login', async (req, res) => {
     );
 
 
-    res.status(200).json({ token });
+    res.status(200).json({ token, user_type: user.user_type });
 
   } catch (err) {
     console.error(err);

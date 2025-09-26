@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import lessonsRouter from './routes/lessons.js';
+import classesRouter from './routes/classes.js';
 import authRouter from './routes/auth.js';
 import { authMiddleware } from "./middleware/auth.js";
 
@@ -14,6 +15,7 @@ app.use(express.json());
 // Routes
 // app.use('/lessons', lessonsRouter);
 app.use("/lessons", authMiddleware, lessonsRouter);
+app.use('/classes', authMiddleware,classesRouter);
 app.use('/api', authRouter);
 
 // Root

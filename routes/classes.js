@@ -4,7 +4,7 @@ import pool from '../db.js';
 const router = express.Router();
 
 // GET /classes
-router.get('/classes', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM classes ORDER BY id ASC');
         res.json(result.rows);

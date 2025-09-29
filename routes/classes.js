@@ -38,5 +38,32 @@ router.post('/', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+// ✅ Soft delete a class
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      `UPDATE classes 
+       SET isdeleted = 1 
+       WHERE id = $1 
+       RETURNING *`,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+
+    res.json({
+      message: 'Class deleted successfully',
+      class: result.rows[0],
+    });
+  } catch (err) {
+    console.error('Error deleting class:', err.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 export default router;

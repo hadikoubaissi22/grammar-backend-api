@@ -64,6 +64,37 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+// ✅ Update a class
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, level } = req.body;
+
+    if (!name || !level) {
+      return res.status(400).json({ error: 'Name and level are required' });
+    }
+
+    const result = await pool.query(
+      `UPDATE classes 
+       SET name = $1, description = $2, level = $3, updated_at = NOW()
+       WHERE id = $4 AND isdeleted = 0
+       RETURNING *`,
+      [name, description, level, id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Class not found or already deleted' });
+    }
+
+    res.json({
+      message: 'Class updated successfully',
+      class: result.rows[0],
+    });
+  } catch (err) {
+    console.error('Error updating class:', err.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 
 export default router;

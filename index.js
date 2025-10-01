@@ -17,7 +17,7 @@ app.use(express.json());
 // app.use('/lessons', lessonsRouter);
 app.use("/lessons", authMiddleware, lessonsRouter);
 app.use('/classes', authMiddleware,classesRouter);
-app.use('/students', authMiddleware,classesRouter);
+app.use('/students', authMiddleware,studentsRouter);
 app.use('/api', authRouter);
 
 // Root

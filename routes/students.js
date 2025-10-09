@@ -6,13 +6,21 @@ const router = express.Router();
 // routes/students.js
 router.get('/', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM students ORDER BY id ASC');
-    res.json({ students: result.rows }); // ✅ wrap in { students: [] }
+    const result = await pool.query(`
+      SELECT s.id, s.firstname, s.lastname, s.fathername, s.mothername,
+             s.phone, s.class_id, c.name AS class_name, s.created_at
+      FROM students s
+      LEFT JOIN classes c ON s.class_id = c.id
+      ORDER BY s.id ASC
+    `);
+
+    res.json({ students: result.rows }); // now each student has class_name
   } catch (err) {
     console.error('Error fetching students:', err.message);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 // ✅ Add a new student
 router.post('/', async (req, res) => {
   try {

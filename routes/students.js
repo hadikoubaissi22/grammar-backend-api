@@ -46,5 +46,41 @@ router.post('/', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+// ✅ Update an existing student
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { firstname, lastname, fathername, mothername, phone, class_id } = req.body;
+
+    // Validation
+    if (!firstname || !lastname) {
+      return res.status(400).json({ error: 'First Name and Last Name are required' });
+    }
+
+    // Check if the student exists
+    const existing = await pool.query('SELECT * FROM students WHERE id = $1', [id]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Update the student
+    const result = await pool.query(
+      `UPDATE students 
+       SET firstname = $1, lastname = $2, fathername = $3, mothername = $4, phone = $5, class_id = $6, updated_at = NOW()
+       WHERE id = $7 
+       RETURNING *`,
+      [firstname, lastname, fathername, mothername, phone, class_id, id]
+    );
+
+    res.status(200).json({
+      message: 'Student updated successfully',
+      student: result.rows[0],
+    });
+  } catch (err) {
+    console.error('Error updating student:', err.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 export default router;

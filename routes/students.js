@@ -85,6 +85,13 @@ router.put('/:id', async (req, res) => {
       message: 'Student updated successfully',
       student: result.rows[0],
     });
+
+    await pool.query(
+      `INSERT INTO logs (logs_type, comment, userid, datetime)
+      VALUES ($1, $2, $3, NOW() AT TIME ZONE 'Asia/Beirut')`,
+      [10, `${req.user.fullname} updated student: ${id}`, req.user.id]
+    );
+
   } catch (err) {
     console.error('Error updating student:', err.message);
     res.status(500).json({ error: 'Internal Server Error' });

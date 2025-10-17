@@ -11,6 +11,7 @@ router.get('/', async (req, res) => {
              s.phone, s.class_id, c.name AS class_name, s.created_at
       FROM students s
       LEFT JOIN classes c ON s.class_id = c.id
+      where s.isdeleted=0
       ORDER BY s.id ASC
     `);
 

@@ -59,8 +59,8 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { firstname, lastname, fathername, mothername, phone, class_id } = req.body;
-
+    const { firstname, lastname, fathername, mothername, phone, classId } = req.body;
+    const class_id = classId;
     // Validation
     if (!firstname || !lastname) {
       return res.status(400).json({ error: 'First Name and Last Name are required' });

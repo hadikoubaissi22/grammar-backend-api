@@ -37,10 +37,19 @@ router.post('/', async (req, res) => {
       [firstname, lastname, fathername,mothername, phone, class_id]
     );
 
+    const studentId = result.rows[0].id;
+
     res.status(201).json({
       message: 'Student created successfully',
       student: result.rows[0],
     });
+
+    await pool.query(
+      `INSERT INTO logs (logs_type, comment, userid, datetime)
+      VALUES ($1, $2, $3, NOW() AT TIME ZONE 'Asia/Beirut')`,
+      [9, `${req.user.fullname} added new student: ${studentId}`, req.user.id]
+    );
+
   } catch (err) {
     console.error('Error creating student:', err.message);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -66,7 +75,7 @@ router.put('/:id', async (req, res) => {
     // Update the student
     const result = await pool.query(
       `UPDATE students 
-       SET firstname = $1, lastname = $2, fathername = $3, mothername = $4, phone = $5, class_id = $6, updated_at = NOW()
+       SET firstname = $1, lastname = $2, fathername = $3, mothername = $4, phone = $5, class_id = $6
        WHERE id = $7 
        RETURNING *`,
       [firstname, lastname, fathername, mothername, phone, class_id, id]

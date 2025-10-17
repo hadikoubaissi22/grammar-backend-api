@@ -44,11 +44,11 @@ router.post('/', async (req, res) => {
       student: result.rows[0],
     });
 
-    await pool.query(
-      `INSERT INTO logs (logs_type, comment, userid, datetime)
-      VALUES ($1, $2, $3, NOW() AT TIME ZONE 'Asia/Beirut')`,
-      [9, `${req.user.fullname} added new student: ${studentId}`, req.user.id]
-    );
+    // await pool.query(
+    //   `INSERT INTO logs (logs_type, comment, userid, datetime)
+    //   VALUES ($1, $2, $3, NOW() AT TIME ZONE 'Asia/Beirut')`,
+    //   [9, `${req.user.fullname} added new student: ${studentId}`, req.user.id]
+    // );
 
   } catch (err) {
     console.error('Error creating student:', err.message);

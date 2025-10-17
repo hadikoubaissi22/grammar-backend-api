@@ -97,6 +97,37 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+// ✅ Soft delete a class
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
 
+    const result = await pool.query(
+      `UPDATE students 
+       SET isdeleted = 1 
+       WHERE id = $1 
+       RETURNING *`,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    res.json({
+      message: 'Student deleted successfully',
+      student: result.rows[0],
+    });
+
+    await pool.query(
+      `INSERT INTO logs (logs_type, comment, userid, datetime)
+      VALUES ($1, $2, $3, NOW() AT TIME ZONE 'Asia/Beirut')`,
+      [11, `${req.user.fullname} deleted student ${id}`, req.user.id]
+    );
+  } catch (err) {
+    console.error('Error deleting student:', err.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 export default router;

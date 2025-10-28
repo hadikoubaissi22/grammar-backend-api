@@ -3,17 +3,32 @@ import pool from '../db.js';
 
 const router = express.Router();
 
+// GET /api/lessons
 router.get('/', async (req, res) => {
   try {
-    const lessonsResult = await pool.query('SELECT * FROM lessons ORDER BY id');
+    const classid = req.user.classid; // ✅ from token
+
+    const lessonsResult = await pool.query(
+      'SELECT * FROM lessons WHERE classid=$1 ORDER BY id',
+      [classid]
+    );
+
     const lessons = [];
 
     for (const lesson of lessonsResult.rows) {
-      const questionsResult = await pool.query('SELECT * FROM questions WHERE lesson_id=$1', [lesson.id]);
+      const questionsResult = await pool.query(
+        'SELECT * FROM questions WHERE lesson_id=$1',
+        [lesson.id]
+      );
+
       const questions = [];
 
       for (const question of questionsResult.rows) {
-        const optionsResult = await pool.query('SELECT * FROM options WHERE question_id=$1 ORDER BY id', [question.id]);
+        const optionsResult = await pool.query(
+          'SELECT * FROM options WHERE question_id=$1 ORDER BY id',
+          [question.id]
+        );
+
         questions.push({
           id: question.id,
           text: question.text,
@@ -27,11 +42,13 @@ router.get('/', async (req, res) => {
     }
 
     res.status(200).json({ lessons });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
+
 
 // POST /api/lessons
 router.post('/', async (req, res) => {

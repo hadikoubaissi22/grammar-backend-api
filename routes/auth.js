@@ -233,7 +233,13 @@ router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const result = await pool.query('SELECT * FROM users WHERE username=$1 or email=$1', [username]);
+    const result = await pool.query(`
+      SELECT u.*, c.name AS classname
+      FROM users u
+      LEFT JOIN classes c ON u.classid = c.id
+      WHERE u.username=$1 OR u.email=$1
+    `, [username]);
+
 
     if (result.rows.length === 0) {
       return res.status(401).json({ message: 'Account not found' });
@@ -250,7 +256,7 @@ router.post('/login', async (req, res) => {
 
     // Generate JWT token valid for 12 hours
     const token = jwt.sign(
-      { id: user.id, username: user.username, fullname: user.fullname, user_type: user.user_type },
+      { id: user.id, username: user.username, fullname: user.fullname, user_type: user.user_type, classid: user.classid,classname: user.classname },
       process.env.JWT_SECRET,
       { expiresIn: "12h" }
     );
@@ -263,7 +269,7 @@ router.post('/login', async (req, res) => {
     );
 
 
-    res.status(200).json({ token, user_type: user.user_type });
+    res.status(200).json({ token, user_type: user.user_type, classid: user.classid, classname: user.classname});
 
   } catch (err) {
     console.error(err);

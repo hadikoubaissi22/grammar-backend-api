@@ -38,7 +38,7 @@ router.get('/', async (req, res) => {
         });
       }
 
-      lessons.push({ id: lesson.id, title: lesson.title, questions });
+      lessons.push({ id: lesson.id, title: lesson.title, classId: lesson.classid,questions });
     }
 
     res.status(200).json({ lessons });

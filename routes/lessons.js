@@ -53,24 +53,25 @@ router.get('/', async (req, res) => {
 // POST /api/lessons
 router.post('/', async (req, res) => {
   try {
-    const { title, questions } = req.body;
+    const { title, classId, questions } = req.body; // ✅ receive classId
 
-    // Insert lesson
+    // ✅ Insert lesson with classId
     const lessonResult = await pool.query(
-      'INSERT INTO lessons(title) VALUES($1) RETURNING id', 
-      [title]
+      'INSERT INTO lessons(title, classid) VALUES($1, $2) RETURNING id',
+      [title, classId]
     );
     const lessonId = lessonResult.rows[0].id;
 
     // Insert questions
     for (const q of questions) {
       const questionResult = await pool.query(
-        'INSERT INTO questions(lesson_id, text, correct_answer, image_url) VALUES($1, $2, $3, $4) RETURNING id',
-        [lessonId, q.text, q.correctAnswer, q.image || null] // store Base64 string
+        `INSERT INTO questions(lesson_id, text, correct_answer, image_url) 
+         VALUES($1, $2, $3, $4) RETURNING id`,
+        [lessonId, q.text, q.correctAnswer, q.image || null]
       );
+
       const questionId = questionResult.rows[0].id;
 
-      // Insert options
       for (const optionText of q.options) {
         await pool.query(
           'INSERT INTO options(question_id, option_text) VALUES($1, $2)',
@@ -79,19 +80,21 @@ router.post('/', async (req, res) => {
       }
     }
 
+    // Log
     await pool.query(
       `INSERT INTO logs (logs_type, comment, userid, datetime)
       VALUES ($1, $2, $3, NOW() AT TIME ZONE 'Asia/Beirut')`,
       [6, `${req.user.fullname} added new lesson ${lessonId}`, req.user.id]
     );
 
-
     res.status(201).json({ message: 'Lesson saved successfully!' });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
+
 
 // DELETE a lesson by ID
 router.delete('/:id', async (req, res) => {

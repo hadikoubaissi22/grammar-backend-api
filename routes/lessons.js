@@ -124,11 +124,11 @@ router.delete('/:id', async (req, res) => {
 // PUT /api/lessons/:id
 router.put('/:id', async (req, res) => {
   const lessonId = req.params.id;
-  const { title, questions } = req.body;
+  const { title, classId, questions } = req.body;
 
   try {
     // 1️⃣ Update lesson title
-    await pool.query('UPDATE lessons SET title=$1 WHERE id=$2', [title, lessonId]);
+    await pool.query('UPDATE lessons SET title=$1, classid=$2 WHERE id=$3', [title, classId, lessonId]);
 
     // 2️⃣ Get existing questions from DB
     const existingQuestionsResult = await pool.query(

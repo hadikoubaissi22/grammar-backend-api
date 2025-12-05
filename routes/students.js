@@ -6,14 +6,15 @@ const router = express.Router();
 // routes/students.js
 router.get('/', async (req, res) => {
   try {
+    const classid = req.user.classid; // ✅ from token
     const result = await pool.query(`
       SELECT s.id, s.firstname, s.lastname, s.fathername, s.mothername,
              s.phone, s.class_id, c.name AS class_name, s.created_at
       FROM students s
       LEFT JOIN classes c ON s.class_id = c.id
-      where s.isdeleted=0
+      where s.isdeleted=0 and s.class_id=$1
       ORDER BY s.id ASC
-    `);
+    `, [classid]);
 
     res.json({ students: result.rows }); // now each student has class_name
   } catch (err) {

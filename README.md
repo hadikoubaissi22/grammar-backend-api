@@ -41,7 +41,7 @@ A robust Node.js backend API designed for teachers to manage educational content
 Follow these steps to set up the project locally.
 
 ### 1. Clone the Repository
-```bash
+
 git clone https://github.com/hadikoubaissi22/grammar-backend-api.git
 cd grammar-backend-api
 
